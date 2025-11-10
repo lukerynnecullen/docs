@@ -1,0 +1,108 @@
+---
+title: Rate Limits
+description: Understanding API rate limits
+---
+
+## Overview
+
+API requests are subject to rate limiting to ensure fair usage and maintain service quality.
+
+## Current Rate Limits
+
+- **Default**: 100 requests per minute per API key
+- **Burst**: Up to 10 requests per second
+
+<Info>
+Rate limits may vary based on your workspace plan. Check your account settings for your specific limits.
+</Info>
+
+## Rate Limit Exceeded
+
+If you exceed the rate limit, you'll receive a `429 Too Many Requests` response:
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Rate limit exceeded. Please retry after the specified time.",
+    "details": {
+      "retry_after": 60
+    },
+    "doc_url": "https://docs.precital.com/errors#RATE_LIMITED"
+  }
+}
+```
+
+The response includes a `Retry-After` header indicating when you can retry (in seconds).
+
+## Handling Rate Limits
+
+### Check Retry-After Header
+
+The `Retry-After` header tells you how long to wait before retrying:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+```
+
+### Implement Exponential Backoff
+
+When you receive a rate limit error, implement exponential backoff:
+
+<CodeGroup>
+```javascript JavaScript
+async function makeRequestWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      
+      if (response.status === 429) {
+        const retryAfter = parseInt(response.headers.get('Retry-After') || '60');
+        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+    }
+  }
+}
+```
+
+```python Python
+import time
+import requests
+
+def make_request_with_retry(url, headers, max_retries=3):
+    for i in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 429:
+                retry_after = int(response.headers.get('Retry-After', 60))
+                time.sleep(retry_after)
+                continue
+            
+            return response
+        except Exception as e:
+            if i == max_retries - 1:
+                raise
+            time.sleep(2 ** i)
+```
+</CodeGroup>
+
+## Best Practices
+
+- **Monitor your request rate**: Track how many requests you're making per minute
+- **Implement request queuing**: Queue requests to avoid hitting rate limits
+- **Use exponential backoff**: When rate limited, wait before retrying
+- **Cache responses**: Cache API responses when possible to reduce requests
+- **Batch operations**: Combine multiple operations when possible
+
+## Increasing Rate Limits
+
+If you need higher rate limits, contact support or upgrade your workspace plan.
+

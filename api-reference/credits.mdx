@@ -1,0 +1,42 @@
+---
+title: Credits
+api: openapi.yaml
+---
+
+<ApiReference openapi="openapi.yaml" endpoint="GET /v1/credits" />
+
+## Credit Costs
+
+Each API operation consumes a certain number of credits:
+
+- **Audio Analysis**: 1 credit per analysis
+- **Lyric Analysis**: 1 credit per analysis
+- **Press Release Generation**: 2 credits per press release
+- **Credit Balance Check**: 0 credits (free)
+
+## Checking Your Balance
+
+Use the `/v1/credits` endpoint to check your current credit balance and see estimated remaining operations:
+
+<CodeGroup>
+```bash cURL
+curl -X GET https://api.precital.com/v1/credits \
+  -H "X-API-Key: your-api-key-here"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.precital.com/v1/credits', {
+  headers: {
+    'X-API-Key': 'your-api-key-here'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+</CodeGroup>
+
+## Insufficient Credits
+
+If your workspace doesn't have enough credits, the API will return a `402 Payment Required` or `400 Bad Request` response with a `CREDITS_EXHAUSTED` error code.
+

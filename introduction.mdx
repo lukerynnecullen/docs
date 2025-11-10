@@ -1,0 +1,87 @@
+---
+title: Introduction
+description: Get started with the Precital API
+---
+
+## Welcome to the Precital API
+
+The Precital API provides programmatic access to AI-powered music analysis and promotion tools for independent artists, labels, and PR agencies.
+
+## What You Can Do
+
+The Precital API enables you to:
+
+- **Analyze Audio Tracks**: Extract musical characteristics including genre, mood, BPM, key, instruments, and more
+- **Analyze Song Lyrics**: Discover themes, moods, explicit content indicators, keywords, and more
+- **Generate Press Releases**: Create professional press releases for music releases
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Audio Analysis" icon="music">
+    Analyze tracks to extract genre, mood, BPM, key, instruments, and more
+  </Card>
+  <Card title="Lyric Analysis" icon="file-text">
+    Analyze song lyrics for themes, moods, explicit content, and keywords
+  </Card>
+  <Card title="Press Release Generation" icon="newspaper">
+    Generate professional press releases for music releases
+  </Card>
+  <Card title="Credit-Based Billing" icon="credit-card">
+    Simple credit-based billing model - each operation consumes credits
+  </Card>
+</CardGroup>
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.precital.com/v1
+```
+
+For testing, you can use the sandbox environment:
+
+```
+https://sandbox-api.precital.com/v1
+```
+
+## Authentication
+
+All API requests (except the `/health` endpoint) require authentication using an API key. API keys are workspace-scoped and can be generated from your account settings in the Precital app.
+
+Include your API key in the `X-API-Key` header:
+
+```http
+X-API-Key: your-api-key-here
+```
+
+<Info>
+The workspace associated with your API key is automatically inferred - you don't need to specify it in requests.
+</Info>
+
+## Credits
+
+All API operations consume credits from your workspace's credit balance:
+
+- **Audio Analysis**: 1 credit per analysis
+- **Lyric Analysis**: 1 credit per analysis
+- **Press Release Generation**: 2 credits per press release
+- **Credit Balance Check**: 0 credits (free)
+
+If your workspace has insufficient credits, the API will return a `CREDITS_EXHAUSTED` error.
+
+## Next Steps
+
+<Steps>
+  <Step title="Generate an API Key">
+    Log in to your Precital account and generate an API key from your account settings.
+  </Step>
+  <Step title="Read the Quick Start Guide">
+    Follow our quick start guide to make your first API call.
+  </Step>
+  <Step title="Explore the API Reference">
+    Browse the API reference to see all available endpoints.
+  </Step>
+</Steps>
+

@@ -1,0 +1,73 @@
+---
+title: API Overview
+description: Overview of the Precital API endpoints
+---
+
+## API Endpoints
+
+The Precital API provides the following endpoints:
+
+### Audio Analysis
+
+Analyze audio files to extract musical characteristics:
+
+- `POST /v1/audio-analyses` - Create a new audio analysis
+- `GET /v1/audio-analyses` - List all audio analyses
+- `GET /v1/audio-analyses/{id}` - Get a specific audio analysis
+
+### Lyric Analysis
+
+Analyze song lyrics to extract themes, moods, and content indicators:
+
+- `POST /v1/lyric-analyses` - Create a new lyric analysis
+- `GET /v1/lyric-analyses` - List all lyric analyses
+- `GET /v1/lyric-analyses/{id}` - Get a specific lyric analysis
+
+### Press Releases
+
+Generate professional press releases for music releases:
+
+- `POST /v1/press-releases` - Generate a new press release
+- `GET /v1/press-releases` - List all press releases
+- `GET /v1/press-releases/{id}` - Get a specific press release
+
+### Credits
+
+Manage and check your workspace's credit balance:
+
+- `GET /v1/credits` - Get credit balance and estimated remaining operations
+
+### Health
+
+Check API availability:
+
+- `GET /v1/health` - Health check endpoint (no authentication required)
+
+## Base URL
+
+All API requests should be made to:
+
+```
+https://api.precital.com/v1
+```
+
+## Authentication
+
+All endpoints except `/health` require authentication using an API key in the `X-API-Key` header.
+
+## Response Format
+
+All responses are in JSON format. Successful responses return a `200` status code, while errors return appropriate HTTP status codes (400, 401, 404, 429, 500, etc.).
+
+## Pagination
+
+List endpoints support cursor-based pagination using the `cursor` and `limit` query parameters.
+
+## Rate Limits
+
+API requests are subject to rate limiting. If you exceed the rate limit, you'll receive a `429 Too Many Requests` response with a `Retry-After` header.
+
+## Explore the API
+
+Use the interactive API reference to explore endpoints, view schemas, and try out requests directly from your browser.
+

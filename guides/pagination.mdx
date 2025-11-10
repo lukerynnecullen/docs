@@ -1,0 +1,124 @@
+---
+title: Pagination
+description: How to paginate through API responses
+---
+
+## Overview
+
+List endpoints support cursor-based pagination to efficiently retrieve large datasets.
+
+## How It Works
+
+Cursor-based pagination uses a cursor token to mark your position in the dataset. This allows you to fetch the next page of results without missing or duplicating items.
+
+## Using Pagination
+
+### First Page
+
+Make a request without a cursor to get the first page:
+
+```bash
+curl -X GET "https://api.precital.com/v1/audio-analyses?limit=20" \
+  -H "X-API-Key: your-api-key-here"
+```
+
+### Next Page
+
+Use the `next_cursor` from the previous response to fetch the next page:
+
+```bash
+curl -X GET "https://api.precital.com/v1/audio-analyses?limit=20&cursor=eyJpZCI6ImFuYV9hYmMxMjNkZWY0NTYiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSAxMDozMDowMFoifQ==" \
+  -H "X-API-Key: your-api-key-here"
+```
+
+## Response Format
+
+Paginated responses include a `meta` object with pagination information:
+
+```json
+{
+  "data": [
+    {
+      "id": "ana_abc123def456",
+      "status": "completed",
+      ...
+    }
+  ],
+  "meta": {
+    "next_cursor": "eyJpZCI6ImFuYV9hYmMxMjNkZWY0NTYiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSAxMDozMDowMFoifQ=="
+  }
+}
+```
+
+<Info>
+When `next_cursor` is `null`, you've reached the last page.
+</Info>
+
+## Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `cursor` | string | null | - | Cursor token from previous response |
+| `limit` | integer | 20 | 100 | Number of items per page |
+
+## Example Implementation
+
+<CodeGroup>
+```javascript JavaScript
+async function fetchAllAnalyses(apiKey) {
+  const allAnalyses = [];
+  let cursor = null;
+  
+  do {
+    const url = cursor 
+      ? `https://api.precital.com/v1/audio-analyses?limit=100&cursor=${cursor}`
+      : 'https://api.precital.com/v1/audio-analyses?limit=100';
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-API-Key': apiKey
+      }
+    });
+    
+    const data = await response.json();
+    allAnalyses.push(...data.data);
+    cursor = data.meta.next_cursor;
+  } while (cursor !== null);
+  
+  return allAnalyses;
+}
+```
+
+```python Python
+import requests
+
+def fetch_all_analyses(api_key):
+    all_analyses = []
+    cursor = None
+    
+    while True:
+        url = 'https://api.precital.com/v1/audio-analyses'
+        params = {'limit': 100}
+        if cursor:
+            params['cursor'] = cursor
+        
+        response = requests.get(url, headers={'X-API-Key': api_key}, params=params)
+        data = response.json()
+        
+        all_analyses.extend(data['data'])
+        cursor = data['meta']['next_cursor']
+        
+        if cursor is None:
+            break
+    
+    return all_analyses
+```
+</CodeGroup>
+
+## Best Practices
+
+- **Use appropriate page sizes**: Choose a `limit` that balances performance and number of requests
+- **Handle null cursors**: Check if `next_cursor` is `null` to know when to stop
+- **Store cursors**: If you need to resume pagination, store the cursor token
+- **Respect rate limits**: Don't paginate too aggressively to avoid hitting rate limits
+

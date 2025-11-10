@@ -1,0 +1,95 @@
+---
+title: Error Handling
+description: Understanding API errors and error codes
+---
+
+## Error Response Format
+
+All errors follow a consistent structure:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {
+      // Additional context (structure varies by error type)
+    },
+    "doc_url": "https://docs.precital.com/errors#ERROR_CODE"
+  }
+}
+```
+
+## Error Codes
+
+<AccordionGroup>
+  <Accordion title="UNAUTHORIZED (401)">
+    Missing or invalid API key.
+
+    **Solution**: Ensure you're including a valid API key in the `X-API-Key` header.
+  </Accordion>
+
+  <Accordion title="INVALID_API_KEY (401)">
+    The provided API key is invalid or expired.
+
+    **Solution**: Generate a new API key from your account settings.
+  </Accordion>
+
+  <Accordion title="CREDITS_EXHAUSTED (402/400)">
+    Insufficient credits for the operation.
+
+    **Solution**: Purchase credits from your Precital account or wait for credits to be added.
+  </Accordion>
+
+  <Accordion title="VALIDATION_ERROR (400)">
+    Request validation failed (missing required fields, invalid format, etc.).
+
+    **Solution**: Check the error details for specific field validation issues.
+  </Accordion>
+
+  <Accordion title="NOT_FOUND (404)">
+    The requested resource was not found.
+
+    **Solution**: Verify the resource ID and ensure it belongs to your workspace.
+  </Accordion>
+
+  <Accordion title="PROVIDER_ERROR (500)">
+    An error occurred with an upstream AI provider.
+
+    **Solution**: Retry the request. If the issue persists, contact support.
+  </Accordion>
+
+  <Accordion title="RATE_LIMITED (429)">
+    Rate limit exceeded.
+
+    **Solution**: Wait for the time specified in the `Retry-After` header before retrying.
+  </Accordion>
+</AccordionGroup>
+
+## Example Error Response
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Either audio_url or audio_id must be provided",
+    "details": {
+      "field": "audio_url"
+    },
+    "doc_url": "https://docs.precital.com/errors#VALIDATION_ERROR"
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Success |
+| 400 | Bad Request (validation error or insufficient credits) |
+| 401 | Unauthorized (missing or invalid API key) |
+| 402 | Payment Required (insufficient credits) |
+| 404 | Not Found |
+| 429 | Too Many Requests (rate limit exceeded) |
+| 500 | Internal Server Error (provider error) |
+

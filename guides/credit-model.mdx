@@ -1,0 +1,81 @@
+---
+title: Credit Model
+description: Understanding the Precital API credit system
+---
+
+## Overview
+
+The Precital API uses a credit-based billing model. Each API operation consumes a certain number of credits from your workspace's balance.
+
+## Credit Costs
+
+| Operation | Credits |
+|-----------|---------|
+| Audio Analysis | 1 credit |
+| Lyric Analysis | 1 credit |
+| Press Release Generation | 2 credits |
+| Credit Balance Check | 0 credits (free) |
+
+## Workspace Credits
+
+<Info>
+Credits are workspace-scoped - each workspace has its own credit balance.
+</Info>
+
+- All API operations performed with an API key use credits from the associated workspace
+- Credits are deducted immediately when an operation completes successfully
+- Failed operations do not consume credits
+
+## Checking Your Balance
+
+Use the `/v1/credits` endpoint to check your current credit balance:
+
+```bash
+curl -X GET https://api.precital.com/v1/credits \
+  -H "X-API-Key: your-api-key-here"
+```
+
+The response includes:
+- Current credit balance
+- Estimated remaining operations for each endpoint type
+
+## Insufficient Credits
+
+If your workspace doesn't have enough credits for an operation, the API will return a `402 Payment Required` or `400 Bad Request` response:
+
+```json
+{
+  "error": {
+    "code": "CREDITS_EXHAUSTED",
+    "message": "Insufficient credits to perform this operation",
+    "details": {
+      "credits_required": 1,
+      "credits_available": 0
+    },
+    "doc_url": "https://docs.precital.com/errors#CREDITS_EXHAUSTED"
+  }
+}
+```
+
+## Purchasing Credits
+
+To purchase credits:
+
+1. Log in to your Precital account
+2. Navigate to the credits purchase page
+3. Select the amount of credits you want to purchase
+4. Complete the payment
+
+Credits are added to your workspace's balance immediately after purchase.
+
+## Best Practices
+
+<Warning>
+Always check your credit balance before making API calls to avoid unexpected errors.
+</Warning>
+
+- Monitor your credit balance regularly
+- Set up alerts for low credit balances
+- Purchase credits proactively to avoid service interruptions
+- Use the `/v1/credits` endpoint to estimate remaining operations
+
