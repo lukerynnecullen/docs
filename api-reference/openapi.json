@@ -1,217 +1,1103 @@
-{
-  "openapi": "3.1.0",
-  "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
-  },
-  "servers": [
-    {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "paths": {
-    "/plants": {
-      "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
-  }
-}
+openapi: 3.1.0
+
+info:
+  title: Precital API
+  version: 1.0.0
+  description: |
+    Precital API provides AI-powered music analysis and promotion tools for independent artists, labels, and PR agencies.
+
+    ## Overview
+
+    The Precital API enables programmatic access to:
+    - **Audio Analysis**: Analyze tracks to extract genre, mood, BPM, key, instruments, and more
+    - **Lyric Analysis**: Analyze song lyrics for themes, moods, explicit content, and keywords
+    - **Press Release Generation**: Generate professional press releases for music releases
+
+    ## Authentication
+
+    All API requests (except `/health`) require authentication using an API key. API keys are workspace-scoped and can be generated from your account settings in the Precital app.
+
+    Include your API key in the `X-API-Key` header:
+    ```
+    X-API-Key: your-api-key-here
+    ```
+
+    The workspace associated with your API key is automatically inferred - you don't need to specify it in requests.
+
+    ## Credits
+
+    All API operations consume credits from your workspace's credit balance. Each endpoint description includes information about credit costs. If your workspace has insufficient credits, the API will return a `CREDITS_EXHAUSTED` error.
+
+    ## Rate Limits
+
+    API requests are subject to rate limiting. If you exceed the rate limit, you'll receive a `RATE_LIMITED` error with a `Retry-After` header indicating when you can retry.
+
+    ## Future Authentication
+
+    In the future, we may support Supabase JWT authentication for first-party users. The API is designed to support multiple authentication schemes.
+  contact:
+    name: Precital Support
+    email: support@precital.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.precital.com/v1
+    description: Production API
+  - url: https://sandbox-api.precital.com/v1
+    description: Sandbox API (for testing)
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: |
+        Simple health check endpoint for monitoring API availability.
+        This endpoint does not require authentication.
+      operationId: getHealth
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-01-15T10:30:00Z"
+              example:
+                status: ok
+                timestamp: "2025-01-15T10:30:00Z"
+
+  /audio-analyses:
+    post:
+      summary: Create audio analysis
+      description: |
+        Analyze an audio file to extract musical characteristics including genre, mood, BPM, key, instruments, and more.
+
+        **Credit Cost**: 1 credit per analysis
+
+        You can provide either:
+        - `audio_url`: A publicly accessible URL to an audio file (must be accessible by our servers)
+        - `audio_id`: An internal reference to a previously uploaded audio asset
+
+        The analysis is performed synchronously and results are returned immediately.
+      operationId: createAudioAnalysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAudioAnalysisRequest"
+            examples:
+              with_url:
+                summary: Analysis with audio URL
+                value:
+                  audio_url: https://example.com/track.mp3
+                  track_title: My Amazing Song
+                  artist_name: Artist Name
+              with_audio_id:
+                summary: Analysis with audio ID
+                value:
+                  audio_id: audio_abc123
+                  track_title: My Amazing Song
+                  artist_name: Artist Name
+      responses:
+        "200":
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AudioAnalysis"
+              example:
+                id: ana_abc123def456
+                status: completed
+                workspace_id: ws_xyz789
+                input_source: audio_url
+                result:
+                  bpm: 128
+                  key: C# minor
+                  genres:
+                    Electronic: 0.85
+                    House: 0.72
+                  moods:
+                    Energetic: 0.91
+                    Upbeat: 0.78
+                  instruments:
+                    - Synthesizer
+                    - Drum Machine
+                    - Bass
+                  energy: 0.87
+                  danceability: 0.82
+                  acousticness: 0.12
+                  meta_title: My Amazing Song
+                  meta_artist: Artist Name
+                credits_charged: 1
+                created_at: "2025-01-15T10:30:00Z"
+                updated_at: "2025-01-15T10:32:15Z"
+        "400":
+          description: Bad request (validation error or insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: VALIDATION_ERROR
+                  message: Either audio_url or audio_id must be provided
+                  details:
+                    field: audio_url
+                  doc_url: https://docs.precital.com/errors#VALIDATION_ERROR
+        "402":
+          description: Payment required (insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: CREDITS_EXHAUSTED
+                  message: Insufficient credits to perform this operation
+                  details:
+                    credits_required: 1
+                    credits_available: 0
+                  doc_url: https://docs.precital.com/errors#CREDITS_EXHAUSTED
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/ProviderError"
+
+    get:
+      summary: List audio analyses
+      description: |
+        Retrieve a paginated list of audio analyses for your workspace.
+
+        Results are ordered by creation date (newest first).
+      operationId: listAudioAnalyses
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          description: Filter by status
+          required: false
+          schema:
+            type: string
+            enum: [completed, failed, processing]
+          example: completed
+      responses:
+        "200":
+          description: List of audio analyses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AudioAnalysisList"
+              example:
+                data:
+                  - id: ana_abc123def456
+                    status: completed
+                    workspace_id: ws_xyz789
+                    input_source: audio_url
+                    result:
+                      bpm: 128
+                      key: C# minor
+                    credits_charged: 1
+                    created_at: "2025-01-15T10:30:00Z"
+                    updated_at: "2025-01-15T10:32:15Z"
+                meta:
+                  next_cursor: eyJpZCI6ImFuYV9hYmMxMjNkZWY0NTYiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSAxMDozMDowMFoifQ==
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /audio-analyses/{id}:
+    get:
+      summary: Get audio analysis
+      description: |
+        Retrieve a specific audio analysis by ID.
+
+        You can only access analyses from your own workspace.
+      operationId: getAudioAnalysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Audio analysis ID
+          schema:
+            type: string
+          example: ana_abc123def456
+      responses:
+        "200":
+          description: Audio analysis details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AudioAnalysis"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /lyric-analyses:
+    post:
+      summary: Create lyric analysis
+      description: |
+        Analyze song lyrics to extract themes, moods, explicit content indicators, keywords, and more.
+
+        **Credit Cost**: 1 credit per analysis
+
+        The analysis is performed synchronously and results are returned immediately.
+      operationId: createLyricAnalysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLyricAnalysisRequest"
+            example:
+              lyrics: |
+                Verse 1
+                This is a sample song lyric
+                With meaningful content here
+
+                Chorus
+                Repeat this catchy phrase
+                It's memorable and fun
+              track_title: My Amazing Song
+              artist_name: Artist Name
+              language: en
+      responses:
+        "200":
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricAnalysis"
+              example:
+                id: lyr_abc123def456
+                status: completed
+                workspace_id: ws_xyz789
+                input_lyrics_preview: Verse 1\nThis is a sample song lyric...
+                result:
+                  language: en
+                  summary: A song about meaningful experiences with a catchy chorus
+                  explicit: No
+                  keywords:
+                    - meaningful
+                    - catchy
+                    - memorable
+                  moods:
+                    - Upbeat: 0.75
+                    - Positive: 0.68
+                  themes:
+                    - Experience: 0.82
+                    - Life: 0.71
+                  flags:
+                    explicit_language: false
+                    sexual_innuendo: false
+                    alcohol_drugs: false
+                    hate_harassment: false
+                    violence: false
+                credits_charged: 1
+                created_at: "2025-01-15T10:30:00Z"
+                updated_at: "2025-01-15T10:32:15Z"
+        "400":
+          description: Bad request (validation error or insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "402":
+          description: Payment required (insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/ProviderError"
+
+    get:
+      summary: List lyric analyses
+      description: |
+        Retrieve a paginated list of lyric analyses for your workspace.
+
+        Results are ordered by creation date (newest first).
+      operationId: listLyricAnalyses
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          description: Filter by status
+          required: false
+          schema:
+            type: string
+            enum: [completed, failed, processing]
+      responses:
+        "200":
+          description: List of lyric analyses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricAnalysisList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /lyric-analyses/{id}:
+    get:
+      summary: Get lyric analysis
+      description: |
+        Retrieve a specific lyric analysis by ID.
+
+        You can only access analyses from your own workspace.
+      operationId: getLyricAnalysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Lyric analysis ID
+          schema:
+            type: string
+          example: lyr_abc123def456
+      responses:
+        "200":
+          description: Lyric analysis details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LyricAnalysis"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /press-releases:
+    post:
+      summary: Generate press release
+      description: |
+        Generate a professional press release for a music release.
+
+        **Credit Cost**: 2 credits per press release
+
+        You can optionally reference existing audio or lyric analyses to enhance the press release content.
+
+        The press release is generated synchronously and returned immediately.
+      operationId: createPressRelease
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePressReleaseRequest"
+            example:
+              track_title: My Amazing Song
+              artist_name: Artist Name
+              release_date: "2025-02-01"
+              genre: Electronic
+              tone: professional
+              language: en
+              audio_analysis_id: ana_abc123def456
+              lyric_analysis_id: lyr_abc123def456
+      responses:
+        "200":
+          description: Press release generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PressRelease"
+              example:
+                id: pr_abc123def456
+                status: completed
+                workspace_id: ws_xyz789
+                title: Artist Name Releases "My Amazing Song"
+                body: |
+                  [Full press release content here...]
+                credits_charged: 2
+                created_at: "2025-01-15T10:30:00Z"
+                updated_at: "2025-01-15T10:35:20Z"
+        "400":
+          description: Bad request (validation error or insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "402":
+          description: Payment required (insufficient credits)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "500":
+          $ref: "#/components/responses/ProviderError"
+
+    get:
+      summary: List press releases
+      description: |
+        Retrieve a paginated list of press releases for your workspace.
+
+        Results are ordered by creation date (newest first).
+      operationId: listPressReleases
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - name: status
+          in: query
+          description: Filter by status
+          required: false
+          schema:
+            type: string
+            enum: [completed, failed, generating]
+      responses:
+        "200":
+          description: List of press releases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PressReleaseList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /press-releases/{id}:
+    get:
+      summary: Get press release
+      description: |
+        Retrieve a specific press release by ID.
+
+        You can only access press releases from your own workspace.
+      operationId: getPressRelease
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Press release ID
+          schema:
+            type: string
+          example: pr_abc123def456
+      responses:
+        "200":
+          description: Press release details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PressRelease"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /credits:
+    get:
+      summary: Get credit balance
+      description: |
+        Retrieve the current credit balance for your workspace and estimated remaining operations.
+
+        This endpoint does not consume credits.
+      operationId: getCredits
+      responses:
+        "200":
+          description: Credit balance information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditsBalance"
+              example:
+                workspace_id: ws_xyz789
+                credits_balance: 420
+                currency: credits
+                estimated_remaining_operations:
+                  audio_analysis: 420
+                  lyric_analysis: 420
+                  press_release: 210
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Generate your API key from your account settings in the Precital app.
+
+        The API key is workspace-scoped - all operations will be performed in the context of the workspace associated with your API key.
+
+    # Future: SupabaseJWT bearer token scheme for first-party users
+    # SupabaseJWT:
+    #   type: http
+    #   scheme: bearer
+    #   bearerFormat: JWT
+    #   description: Supabase JWT token for first-party users (future feature)
+
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      description: |
+        Pagination cursor. Use the `next_cursor` value from the previous response to fetch the next page.
+        Leave empty to fetch the first page.
+      required: false
+      schema:
+        type: string
+        nullable: true
+      example: eyJpZCI6ImFuYV9hYmMxMjNkZWY0NTYiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSAxMDozMDowMFoifQ==
+
+    Limit:
+      name: limit
+      in: query
+      description: |
+        Maximum number of items to return per page.
+        Default: 20, Maximum: 100
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+
+  schemas:
+    CreateAudioAnalysisRequest:
+      type: object
+      required:
+        - audio_url
+      oneOf:
+        - required:
+            - audio_url
+        - required:
+            - audio_id
+      properties:
+        audio_url:
+          type: string
+          format: uri
+          description: Publicly accessible URL to an audio file
+          example: https://example.com/track.mp3
+        audio_id:
+          type: string
+          description: Internal reference to a previously uploaded audio asset
+          example: audio_abc123
+        track_title:
+          type: string
+          description: Optional track title for metadata
+          example: My Amazing Song
+        artist_name:
+          type: string
+          description: Optional artist name for metadata
+          example: Artist Name
+
+    AudioAnalysis:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the analysis
+          example: ana_abc123def456
+        status:
+          type: string
+          enum: [completed, failed, processing]
+          description: Current status of the analysis
+          example: completed
+        workspace_id:
+          type: string
+          description: Workspace ID (read-only, for reference)
+          example: ws_xyz789
+        input_source:
+          type: string
+          enum: [audio_url, audio_id]
+          description: Source type used for the analysis
+          example: audio_url
+        result:
+          type: object
+          description: Analysis results
+          properties:
+            bpm:
+              type: number
+              description: Beats per minute
+              example: 128
+            key:
+              type: string
+              description: Musical key
+              example: C# minor
+            genres:
+              type: object
+              additionalProperties:
+                type: number
+              description: Detected genres with confidence scores (0-1)
+              example:
+                Electronic: 0.85
+                House: 0.72
+            moods:
+              type: object
+              additionalProperties:
+                type: number
+              description: Detected moods with confidence scores (0-1)
+              example:
+                Energetic: 0.91
+                Upbeat: 0.78
+            styles:
+              type: object
+              additionalProperties:
+                type: number
+              description: Detected styles with confidence scores (0-1)
+            instruments:
+              type: array
+              items:
+                type: string
+              description: Detected instruments
+              example:
+                - Synthesizer
+                - Drum Machine
+                - Bass
+            vocal_family:
+              type: string
+              description: Detected vocal family
+              example: Male Tenor
+            energy:
+              type: number
+              description: Energy level (0-1)
+              example: 0.87
+            acousticness:
+              type: number
+              description: Acousticness level (0-1)
+              example: 0.12
+            danceability:
+              type: number
+              description: Danceability level (0-1)
+              example: 0.82
+            meta_title:
+              type: string
+              description: Extracted or provided track title
+              example: My Amazing Song
+            meta_artist:
+              type: string
+              description: Extracted or provided artist name
+              example: Artist Name
+        credits_charged:
+          type: integer
+          description: Number of credits charged for this analysis
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the analysis was created
+          example: "2025-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the analysis was last updated
+          example: "2025-01-15T10:32:15Z"
+
+    AudioAnalysisList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AudioAnalysis"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    CreateLyricAnalysisRequest:
+      type: object
+      required:
+        - lyrics
+      properties:
+        lyrics:
+          type: string
+          description: Song lyrics to analyze
+          example: |
+            Verse 1
+            This is a sample song lyric
+            With meaningful content here
+        track_title:
+          type: string
+          description: Optional track title for metadata
+          example: My Amazing Song
+        artist_name:
+          type: string
+          description: Optional artist name for metadata
+          example: Artist Name
+        language:
+          type: string
+          description: Language code (ISO 639-1). If not provided, will be auto-detected.
+          example: en
+
+    LyricAnalysis:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the analysis
+          example: lyr_abc123def456
+        status:
+          type: string
+          enum: [completed, failed, processing]
+          description: Current status of the analysis
+          example: completed
+        workspace_id:
+          type: string
+          description: Workspace ID (read-only, for reference)
+          example: ws_xyz789
+        input_lyrics_preview:
+          type: string
+          description: Preview or hash of the analyzed lyrics (for reference)
+          example: Verse 1\nThis is a sample song lyric...
+        result:
+          type: object
+          description: Analysis results
+          properties:
+            language:
+              type: string
+              description: Detected language code (ISO 639-1)
+              example: en
+            summary:
+              type: string
+              description: AI-generated summary of the lyrics
+              example: A song about meaningful experiences with a catchy chorus
+            explicit:
+              type: string
+              enum: [Yes, No]
+              description: Explicit content indicator
+              example: No
+            keywords:
+              type: array
+              items:
+                type: string
+              description: Key terms extracted from the lyrics
+              example:
+                - meaningful
+                - catchy
+                - memorable
+            moods:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  type: number
+              description: Detected moods with confidence scores (0-1)
+              example:
+                - Upbeat: 0.75
+                - Positive: 0.68
+            themes:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  type: number
+              description: Detected themes with confidence scores (0-1)
+              example:
+                - Experience: 0.82
+                - Life: 0.71
+            flags:
+              type: object
+              properties:
+                explicit_language:
+                  type: boolean
+                  description: Contains explicit language
+                sexual_innuendo:
+                  type: boolean
+                  description: Contains sexual innuendo
+                alcohol_drugs:
+                  type: boolean
+                  description: References alcohol or drugs
+                hate_harassment:
+                  type: boolean
+                  description: Contains hate speech or harassment
+                violence:
+                  type: boolean
+                  description: Contains violent content
+        credits_charged:
+          type: integer
+          description: Number of credits charged for this analysis
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the analysis was created
+          example: "2025-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the analysis was last updated
+          example: "2025-01-15T10:32:15Z"
+
+    LyricAnalysisList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyricAnalysis"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    CreatePressReleaseRequest:
+      type: object
+      required:
+        - track_title
+        - artist_name
+      properties:
+        track_title:
+          type: string
+          description: Title of the track
+          example: My Amazing Song
+        artist_name:
+          type: string
+          description: Name of the artist
+          example: Artist Name
+        release_date:
+          type: string
+          format: date
+          description: Release date (YYYY-MM-DD)
+          example: "2025-02-01"
+        genre:
+          type: string
+          description: Genre of the track
+          example: Electronic
+        tone:
+          type: string
+          enum: [professional, casual, edgy]
+          description: Desired tone for the press release
+          default: professional
+          example: professional
+        language:
+          type: string
+          description: Language code for the press release (ISO 639-1)
+          default: en
+          example: en
+        audio_analysis_id:
+          type: string
+          description: Optional reference to an existing audio analysis
+          example: ana_abc123def456
+        lyric_analysis_id:
+          type: string
+          description: Optional reference to an existing lyric analysis
+          example: lyr_abc123def456
+
+    PressRelease:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the press release
+          example: pr_abc123def456
+        status:
+          type: string
+          enum: [completed, failed, generating]
+          description: Current status of the press release
+          example: completed
+        workspace_id:
+          type: string
+          description: Workspace ID (read-only, for reference)
+          example: ws_xyz789
+        title:
+          type: string
+          description: Generated press release title
+          example: Artist Name Releases "My Amazing Song"
+        body:
+          type: string
+          description: Full press release content
+          example: |
+            [Full press release content here...]
+        credits_charged:
+          type: integer
+          description: Number of credits charged for this press release
+          example: 2
+        created_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the press release was created
+          example: "2025-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the press release was last updated
+          example: "2025-01-15T10:35:20Z"
+
+    PressReleaseList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PressRelease"
+        meta:
+          $ref: "#/components/schemas/PaginationMeta"
+
+    CreditsBalance:
+      type: object
+      properties:
+        workspace_id:
+          type: string
+          description: Workspace ID
+          example: ws_xyz789
+        credits_balance:
+          type: integer
+          description: Current credit balance
+          example: 420
+        currency:
+          type: string
+          description: Currency unit (always "credits")
+          example: credits
+        estimated_remaining_operations:
+          type: object
+          description: Estimated number of operations possible with current balance
+          properties:
+            audio_analysis:
+              type: integer
+              description: Estimated remaining audio analyses
+              example: 420
+            lyric_analysis:
+              type: integer
+              description: Estimated remaining lyric analyses
+              example: 420
+            press_release:
+              type: integer
+              description: Estimated remaining press releases
+              example: 210
+
+    PaginationMeta:
+      type: object
+      properties:
+        next_cursor:
+          type: string
+          nullable: true
+          description: |
+            Cursor for the next page. Use this value in the `cursor` query parameter to fetch the next page.
+            `null` if this is the last page.
+          example: eyJpZCI6ImFuYV9hYmMxMjNkZWY0NTYiLCJjcmVhdGVkX2F0IjoiMjAyNS0wMS0xNSAxMDozMDowMFoifQ==
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              enum:
+                - UNAUTHORIZED
+                - INVALID_API_KEY
+                - CREDITS_EXHAUSTED
+                - VALIDATION_ERROR
+                - NOT_FOUND
+                - PROVIDER_ERROR
+                - RATE_LIMITED
+              example: CREDITS_EXHAUSTED
+            message:
+              type: string
+              description: Human-readable error message
+              example: Insufficient credits to perform this operation
+            details:
+              type: object
+              description: Additional error context (structure varies by error type)
+              additionalProperties: true
+              example:
+                credits_required: 1
+                credits_available: 0
+            doc_url:
+              type: string
+              format: uri
+              description: URL to documentation for this error
+              example: https://docs.precital.com/errors#CREDITS_EXHAUSTED
+
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication required. Please provide a valid API key in the X-API-Key header.
+              doc_url: https://docs.precital.com/errors#UNAUTHORIZED
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: NOT_FOUND
+              message: The requested resource was not found.
+              details:
+                resource_type: audio_analysis
+                resource_id: ana_abc123def456
+              doc_url: https://docs.precital.com/errors#NOT_FOUND
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          description: Number of seconds to wait before retrying
+          schema:
+            type: integer
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: RATE_LIMITED
+              message: Rate limit exceeded. Please retry after the specified time.
+              details:
+                retry_after: 60
+              doc_url: https://docs.precital.com/errors#RATE_LIMITED
+
+    ProviderError:
+      description: Upstream AI provider error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error:
+              code: PROVIDER_ERROR
+              message: An error occurred while processing your request with an upstream provider.
+              details:
+                provider: sonoteller
+                provider_error: Service temporarily unavailable
+              doc_url: https://docs.precital.com/errors#PROVIDER_ERROR
