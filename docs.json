@@ -1,5 +1,6 @@
 {
   "$schema": "https://mintlify.com/schema.json",
+  "theme": "mint",
   "name": "Precital API Documentation",
   "logo": {
     "dark": "/images/Precital-Logo-White.png",
